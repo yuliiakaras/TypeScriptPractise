@@ -1,4 +1,4 @@
-console.log('I`m finally doing it!  hh');
+import { updateObjectInArray } from "./updateObjectInArray.js";
 
 type Post = {
     userId: number;
@@ -8,31 +8,37 @@ type Post = {
 }
 
 async function getPosts (): Promise<Post[]> {
-    const response = await fetch(' https://jsonplaceholder.typicode.com/posts');
+    const response: Response = await fetch('https://jsonplaceholder.typicode.com/posts');
     if(!response.ok) {
         throw new Error("Failed to fetch");
-        
     }
-    const posts = await response.json() as Post[];
+    const posts: Post[] = await response.json();
     return posts;
 }
 
 function renderPosts (posts: Post[]): void {
-    const container = document.getElementsByClassName('posts')[0]
-    posts.forEach(({title, body}) => {
-        const post = document.createElement('div');
+    const container: HTMLElement | null = document.getElementById('posts');
+    posts.forEach(({title, body}: Post) => {
+        const post: HTMLDivElement = document.createElement('div');
 
         post.innerHTML = `
-            <h2>${title}</h2>
-            <p>${body}</p>
+            <h2 class='posts__header'>${title}</h2>
+            <p class='posts__body'>${body}</p>
         `
-        container.appendChild(post);
+        post.classList.add('posts__item')
+        if(container) {
+            container.appendChild(post);
+        }
     });
 }
 
-async function init() {
+async function init(): Promise<void> {
     try {
-        const posts = await getPosts();
+        let posts: Post[] = await getPosts();
+
+        posts = updateObjectInArray(posts, 'id', 1, { title: "Changed Title!", body: "Changed text!" });
+        posts = updateObjectInArray(posts, 'id', 2, { title: "Changed Title!" });
+
         renderPosts(posts);
     } catch (error) {
         console.error(error)
@@ -40,3 +46,4 @@ async function init() {
 }
 
 document.addEventListener('DOMContentLoaded', init)
+
